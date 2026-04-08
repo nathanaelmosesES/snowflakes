@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Space Grotesk';
+  
+  src: url('/fonts/space_grotesk/SpaceGrotesk-Bold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+
+  /* --- Backgrounds --- */
+  --sf-bg-app:          #0B1929;  /* deep arctic navy — main app bg */
+  --sf-bg-surface:      #0F2236;  /* cards, panels */
+  --sf-bg-terminal:    #050F1C;  /* terminal area */
+  --sf-bg-sidebar:     #061424;  /* sidebar bg */
+  --sf-bg-sidebar-active: #12253D;  /* active nav item */
+  --sf-bg-input:        #0B1929;  /* form inputs */
+  --sf-bg-hover:        #12253D;  /* generic hover state */
+  --sf-bg-tab-bar:      #0B1929;  /* tab bar strip */
+  --sf-bg-modal:        #0F2236;  /* modal dialog */
+  --sf-bg-overlay:      rgba(5,15,28,0.85);  /* modal backdrop */
+  --sf-online: #26C6A0;
+  --sf-offline: #607D8B;
+  /* --- Text --- */
+  --sf-text-primary:    #C8E0F4;  /* main readable text */
+  --sf-text-secondary:  #7AA8CC;  /* labels, nav items */
+  --sf-text-hint:       #2A4A6A;  /* placeholders, timestamps */
+  --sf-text-accent:     #4FC3F7;  /* links, terminal text, pills */
+  --sf-text-on-accent:  #042C53;  /* text on glacier-blue buttons */
+
+  /* --- Accents --- */
+  --sf-accent:          #4FC3F7;  /* glacier blue — CTA, active border */
+  --sf-accent-hover:    #38B0E0;  /* button hover */
+  --sf-accent-dim:      #185FA5;  /* dimmed accent / focus ring */
+
+  /* --- Status --- */
+  --sf-status-online:   #26C6A0;  /* connected / success */
+  --sf-status-offline:  #607D8B;  /* disconnected */
+  --sf-status-error:    #EF5350;  /* error / danger */
+  --sf-status-warning:  #EF9F27;  /* warning */
+
+  /* --- Borders --- */
+  --sf-border:          #1A3352;  /* default border */
+  --sf-border-hover:    #2A6A9A;  /* card hover border */
+  --sf-border-accent:   #4FC3F7;  /* active tab / nav highlight */
+  --sf-border-focus:    #4FC3F7;  /* input focus ring */
+  
+  --sf-font-title: 'Space Grotesk', sans-serif;
+  --sf-font-ui:         'Inter', 'SF Pro', sans-serif;
+  --sf-font-mono:       'JetBrains Mono', 'Courier New', monospace;
+
+  --sf-radius-sm:       6px;
+  --sf-radius-md:       8px;
+  --sf-radius-lg:       12px;
+  --sf-radius-pill:     999px;
+
+  --sf-space-xs:        4px;
+  --sf-space-sm:        8px;
+  --sf-space-md:        12px;
+  --sf-space-lg:        16px;
+  --sf-space-xl:        24px;
+
+  --sf-sidebar-width:   200px;
+  --sf-sidebar-collapsed: 56px;
+  --sf-tabbar-height:   38px;
+}
+
