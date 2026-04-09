@@ -56,14 +56,27 @@
                 errorMessage = event.payload as string;
             });
 
-            term.onData((data) => {
-                // Tambahkan target_ip di invoke agar backend tahu stream mana yang dikirim
-                console.log(data);
-                const res = invoke(`send_ssh_input`, {
-                    input: data,
-                    ip: targetIp,
-                });
-                console.log(res);
+            let inputBuffer = "";
+            let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+            term.onData((data: string) => {
+                inputBuffer += data;
+
+                if (debounceTimer) return;
+
+                debounceTimer = setTimeout(() => {
+                    const payload = inputBuffer;
+                    inputBuffer = "";
+                    debounceTimer = null;
+
+                    const res = invoke("send_ssh_input", {
+                        input: payload,
+                        ip: targetIp,
+                    });
+
+                    console.log("sent:", payload);
+                    console.log(res);
+                }, 70);
             });
         };
         const setupVault = async () => {

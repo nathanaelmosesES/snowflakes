@@ -129,9 +129,7 @@ async fn start_ssh_session(
                 }
                 Err(e) => {
                     if e.kind() == std::io::ErrorKind::WouldBlock {
-                        // Kasih jeda sedikit (misal 50ms) supaya CPU tidak 100%
 
-                        std::thread::sleep(std::time::Duration::from_millis(50));
                         continue; // Coba baca lagi di iterasi berikutnya
                     } else {
                         println!("Reader error kritis: {:?}", e);
