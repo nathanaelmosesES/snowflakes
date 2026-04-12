@@ -6,73 +6,94 @@
 		ShieldCheck,
 		ArrowLeftRight,
 		Settings,
+		LayoutGrid,
 	} from "@lucide/svelte";
 	import SidebarElement from "../components/home/SidebarElement.svelte";
 	import "../layout.css";
 	import TitleBar from "../components/TitleBar.svelte";
+	import SessionTabBar from "../components/terminal/SessionTabBar.svelte";
+
 	const menus = [
 		{ icon: House, text: "HOME", href: "/" },
 		{ icon: Folders, text: "FILES", href: "/files" },
 		{ icon: ShieldCheck, text: "KNOWN HOSTS", href: "/hosts" },
 		{ icon: ArrowLeftRight, text: "PORT FORWARDING", href: "/ports" },
+		{ icon: LayoutGrid, text: "MULTI WINDOW", href: "/window" },
 		{ icon: Settings, text: "SETTINGS", href: "/settings" },
 	];
 
-	let showSidebar = menus.some((menu) => menu.href === $page.url.pathname);
+	let showTabBar = menus.some(
+		(menu) =>
+			menu.href === $page.url.pathname ||
+			$page.url.pathname.includes("/session"),
+	);
 </script>
 
 <TitleBar />
-<div class="app-layout">
-	{#if showSidebar}
-		<aside class="sidebar-container">
-			<div class="brand-section">
-				<h1 class="brand-title">SNOWFLAKES</h1>
-				<p class="brand-subtitle">SSH MANAGER</p>
-			</div>
 
-			<nav class="nav-menu">
-				{#each menus as menu}
-					<SidebarElement
-						text={menu.text}
-						icon={menu.icon}
-						href={menu.href}
-						isActive={$page.url.pathname === menu.href}
-					/>
-				{/each}
-			</nav>
-		</aside>
-	{/if}
+<div class="app-parent">
+	<aside class="sidebar-container">
+		<div class="brand-section">
+			<h1 class="brand-title">SNOWFLAKES</h1>
+			<p class="brand-subtitle">SSH MANAGER</p>
+		</div>
 
-	<main class="content">
+		<nav class="nav-menu">
+			{#each menus as menu}
+				<SidebarElement
+					text={menu.text}
+					icon={menu.icon}
+					href={menu.href}
+					isActive={$page.url.pathname === menu.href}
+				/>
+			{/each}
+		</nav>
+	</aside>
+
+	<div class="app-layout">
+		{#if showTabBar}
+			<SessionTabBar />
+		{/if}
 		<slot />
-	</main>
+	</div>
 </div>
 
 <style>
-	.app-layout {
+	.app-parent {
 		display: flex;
-		min-height: 100vh;
+		flex-direction: row;
+		height: 100vh;
+		padding-top: 32px;
 		overflow: hidden;
 	}
 
-	.content {
-		flex: 1;
-		overflow-y: auto;
-	}
-
 	.sidebar-container {
-		height: 100vh;
 		width: var(--sf-sidebar-width);
+		flex-shrink: 0;
+		height: 100%;
 		background-color: var(--sf-bg-sidebar);
 		border-right: 1px solid var(--sf-border);
 		display: flex;
 		flex-direction: column;
 		padding-top: var(--sf-space-xl);
-		position: sticky;
-		top: 32px;
+		overflow-y: auto; /* scroll if nav overflows */
 	}
 
-	/* ... Sisanya copy paste dari style sidebar lama Anda ... */
+	.app-layout {
+		flex: 1; /* take all remaining width */
+		min-width: 0; /* prevent flex overflow */
+		height: 100%; /* fill app-parent height */
+		display: flex;
+		flex-direction: column; /* tabbar on top, content below */
+		overflow: hidden;
+	}
+
+	.content {
+		flex: 1; /* fill remaining height below tabbar */
+		min-height: 0; /* CRITICAL: allows flex child to scroll */
+		overflow-y: auto;
+	}
+
 	.brand-section {
 		padding: 0 var(--sf-space-lg);
 		margin-bottom: var(--sf-space-xl);

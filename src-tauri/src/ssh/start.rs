@@ -1,11 +1,9 @@
-use tokio::sync::mpsc;
+use tauri::Emitter;
+use tokio::sync::{mpsc, watch};
 use uuid::Uuid;
 
 use crate::ssh::ssh_instance;
 use crate::ssh::{ssh_engine::SshEngine, ssh_instance::SshInstance};
-
-
-
 
 #[tauri::command]
 pub async fn start_ssh_session(
@@ -16,22 +14,27 @@ pub async fn start_ssh_session(
     initial_password: String,
     initial_username: String,
 ) -> Result<String, String> {
-    let channel = ssh_instance::SshInstance::bastion_session(hostname.clone(), bastion, initial_password, initial_username)?;
+    let channel = ssh_instance::SshInstance::bastion_session(
+        hostname.clone(),
+        bastion,
+        initial_password,
+        initial_username,
+    )?;
     let mut registry = state.0.lock().unwrap();
     let hostname_clone = hostname.clone();
     let reader = channel.stream(0);
     let (tx, rx) = mpsc::unbounded_channel::<String>();
-    
-    registry.insert(
-        format!("{}_{}",hostname_clone.clone(), Uuid::new_v4().to_string()),
-        SshInstance {
-            tx,
-        },
+    let (stop_tx, stop_rx) = watch::channel(false);
+    let session_key = format!(
+        "{}_{}",
+        hostname_clone.clone().replace(".", "-"),
+        Uuid::new_v4().to_string()
     );
+    registry.insert(session_key.clone(), SshInstance { tx, stop_tx });
+    let _ = window.emit("session_updated", session_key.clone());
     let window_clone = window.clone();
-    let hostname_for_read = hostname.clone();
-    SshEngine::spawn_thread_write(rx, channel);
-    SshEngine::spawn_thread_read(hostname_for_read, reader, window_clone);
+    SshEngine::spawn_thread_write(rx, channel, stop_rx.clone());
+    SshEngine::spawn_thread_read(session_key.clone(), reader, window_clone, stop_rx.clone());
 
-    Ok(hostname_clone)
+    Ok(session_key)
 }

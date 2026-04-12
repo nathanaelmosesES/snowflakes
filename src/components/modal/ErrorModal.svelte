@@ -2,9 +2,10 @@
     import { goto } from "$app/navigation";
     import { invoke } from "@tauri-apps/api/core";
 
-    let { isOpen, errorMessage } = $props();
+    let { isOpen, errorMessage, sessionKey } = $props();
 
-    function onClose() {
+    async function onClose() {
+        await invoke("disconnect", { sessionKey });
         goto("/");
     }
 </script>
@@ -65,22 +66,6 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-    }
-
-    input {
-        background: var(--sf-bg-secondary);
-        border: 1px solid var(--sf-border);
-        border-radius: 7px;
-        padding: 8px 10px;
-        font-size: 12px;
-        color: var(--sf-text-primary);
-        outline: none;
-        width: 100%;
-        font-family: var(--sf-font-ui);
-    }
-
-    input:focus {
-        border-color: var(--sf-accent);
     }
 
     .modal-footer {

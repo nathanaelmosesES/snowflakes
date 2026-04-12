@@ -6,11 +6,10 @@
     import { invoke } from "@tauri-apps/api/core";
     import { onMount } from "svelte";
 
-    let cpu = $state(0);
-    let ram = $state(0);
-
     const appWindow = getCurrentWindow();
 
+    let cpu = $state(0);
+    let ram = $state(0);    
     let isMaximized = $state(false);
     let isDragging = $state(false);
 

@@ -1,28 +1,24 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
+use crate::ssh::ssh_engine::SshEngine;
 use serde::Serialize;
-use ssh2::Session;
+use ssh::input::send_ssh_input;
+use ssh::manage_session::disconnect;
+use ssh::manage_session::get_active_session;
+use ssh::reconnect::reconnect_to_session;
+use ssh::start::start_ssh_session;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 use sysinfo::System;
-use tauri::Emitter;
-use std::io::Write;
-use ssh::start::start_ssh_session;
-use ssh::input::send_ssh_input;
-use crate::ssh::ssh_engine::SshEngine;
 
 mod ssh;
-
-
-
 
 #[derive(Serialize)]
 struct SystemStats {
     cpu_usage: u32,
     ram_usage: u32,
 }
-
 
 struct MetricsState(Mutex<System>);
 #[tauri::command]
@@ -41,11 +37,6 @@ fn get_system_stats(state: tauri::State<'_, MetricsState>) -> SystemStats {
         ram_usage,
     }
 }
-
-
-
-
-
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -94,7 +85,7 @@ pub fn run() {
         )
         .setup(|app| {
             // Mengambil handle untuk digunakan di dalam closure atau thread
-            let app_handle = app.handle();
+            let _app_handle = app.handle();
 
             // Contoh: Jika kamu ingin melakukan sesuatu saat app baru nyala
             // app_handle.emit_all("sys-status", "Backend Ready").unwrap();
@@ -108,7 +99,10 @@ pub fn run() {
             greet,
             get_system_stats,
             start_ssh_session,
-            send_ssh_input
+            send_ssh_input,
+            disconnect,
+            get_active_session,
+            reconnect_to_session
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
