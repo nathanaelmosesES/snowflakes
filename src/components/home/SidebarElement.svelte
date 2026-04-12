@@ -1,4 +1,6 @@
 <script>
+  import { goto } from "$app/navigation";
+
   let { text, icon, href, isActive } = $props();
   let isHovered = $state(false);
 </script>
@@ -7,7 +9,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="parent {isActive || isHovered ? 'active' : ''}"
-  onclick={() => (window.location.href = href)}
+  onclick={() => goto(href)}
   role="button"
   tabindex="0"
   onmouseenter={() => (isHovered = true)}

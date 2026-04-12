@@ -32,6 +32,7 @@
   --sf-text-hint:       #2A4A6A;  /* placeholders, timestamps */
   --sf-text-accent:     #4FC3F7;  /* links, terminal text, pills */
   --sf-text-on-accent:  #042C53;  /* text on glacier-blue buttons */
+--sf-text-muted:      #2A4A6A;  /* muted text */
 
   /* --- Accents --- */
   --sf-accent:          #4FC3F7;  /* glacier blue — CTA, active border */

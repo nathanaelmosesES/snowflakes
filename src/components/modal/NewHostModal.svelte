@@ -2,6 +2,11 @@
     import { goto } from "$app/navigation";
     import { invoke } from "@tauri-apps/api/core";
     import { onMount } from "svelte";
+    import { loadDefaultAccount } from "../../controller/vault";
+    import { connectToSession } from "../../controller/ssh";
+    import type { SnowflakesSettings, SessionInfo } from "../../types/settings";
+    import { DEFAULT_SETTINGS } from "../../types/settings";
+    import { loadSettings } from "../../controller/local";
 
     let hostname = $state("");
     let port = $state("22");
@@ -9,49 +14,75 @@
     let password = $state("");
     let label = $state("");
     let showPassword = $state(false);
+    let bastionIp = $state("");
+    let sshTemplate = $state(DEFAULT_SETTINGS.sshTemplate);
+    let errorMsg = $state("");
+    let isConnecting = $state(false);
+    let connectingStatus = $state("");
 
-    let { isOpen, onClose } = $props();
+    let {
+        isOpen,
+        onClose,
+        prefill = null,
+    } = $props<{
+        isOpen: boolean;
+        onClose: () => void;
+        prefill?: SessionInfo | null;
+    }>();
 
-    $effect(() => {
-        const u = username || "user";
-        const h = hostname || "hostname";
-        const p = port !== "22" ? ` -p ${port}` : "";
-        sshCommand = `ssh ${u}@${h}${p}`;
+    onMount(async () => {
+        try {
+            const settings = await loadSettings();
+            bastionIp = settings.bastionIp;
+            sshTemplate = settings.sshTemplate;
+
+            const account = await loadDefaultAccount();
+
+            if (prefill) {
+                hostname = prefill.targetIp;
+                username = prefill.username;
+                password = prefill.password || "";
+                label = prefill.label;
+                bastionIp = prefill.bastionIp || bastionIp;
+            } else {
+                if (account.username) username = account.username;
+                if (account.password) password = account.password;
+            }
+        } catch (err) {
+            console.error("[NewHostModal] failed to load settings:", err);
+        }
     });
 
-    let sshCommand = $state("ssh user@hostname");
+    let sshCommand = $derived(
+        sshTemplate
+            .replace(/\{username\}/g, username || "user")
+            .replace(/\{bastion\}/g, bastionIp || "bastion")
+            .replace(/\{target\}/g, hostname || "hostname"),
+    );
 
     async function handleSubmit() {
-        const newHost = {
-            id: crypto.randomUUID(),
-            label: label || hostname,
-            hostname,
-            port,
-            username,
-            password,
-            createdAt: Date.now(),
-        };
+        errorMsg = "";
+        isConnecting = true;
 
-        // Save to localStorage
-        const savedHosts = JSON.parse(
-            localStorage.getItem("ssh_hosts") || "[]",
-        );
-        localStorage.setItem(
-            "ssh_hosts",
-            JSON.stringify([newHost, ...savedHosts]),
-        );
+        try {
+            const info: SessionInfo = {
+                sessionKey: prefill?.sessionKey || `${hostname}-${Date.now()}`,
+                username,
+                password,
+                targetIp: hostname,
+                bastionIp: bastionIp,
+                label: label || hostname,
+                connectedAt: Date.now(),
+            };
 
-        // Jalankan invoke backend kamu
-        const res = await invoke("start_ssh_session", {
-            bastion: "10.22.77.251",
-            initialPassword: password,
-            initialUsername: username,
-            hostname: hostname,
-        });
-        console.log(res);
-        // Navigate ke session (titik IP diganti dash untuk URL yang bersih)
-        const urlSafeIp = hostname.replaceAll(".", "-");
-        goto(`/session?ip=${hostname}`);
+            await connectToSession(info, (msg) => {
+                connectingStatus = msg;
+            });
+        } catch (e) {
+            console.error("[NewHostModal] SSH start error:", e);
+            errorMsg = String(e);
+            isConnecting = false;
+        }
     }
 </script>
 
@@ -129,14 +160,38 @@
                         copy
                     </button>
                 </div>
+
+                {#if errorMsg}
+                    <div class="error-msg">{errorMsg}</div>
+                {/if}
             </div>
 
             <div class="modal-footer">
-                <button class="btn-ghost" onclick={onClose}>Cancel</button>
-                <button class="btn-primary" onclick={handleSubmit}
-                    >Save & connect</button
+                <button
+                    class="btn-ghost"
+                    onclick={onClose}
+                    disabled={isConnecting}>Cancel</button
                 >
+                <button
+                    class="btn-primary"
+                    onclick={handleSubmit}
+                    disabled={isConnecting}
+                >
+                    {#if isConnecting}
+                        <div class="spinner-sm"></div>
+                        Connecting...
+                    {:else}
+                        Save & connect
+                    {/if}
+                </button>
             </div>
+
+            {#if isConnecting}
+                <div class="loading-overlay">
+                    <div class="spinner"></div>
+                    <span class="loading-text">{connectingStatus}</span>
+                </div>
+            {/if}
         </div>
     </div>
 {/if}
@@ -259,7 +314,7 @@
 
     .cmd-label {
         font-size: 11px;
-        color: var(--sf-text-muted);
+        color: var(--sf-text-primary);
     }
 
     .cmd-box {
@@ -333,5 +388,78 @@
 
     .btn-primary:hover {
         background: var(--sf-accent-hover);
+    }
+
+    .error-msg {
+        font-family: var(--sf-font-ui);
+        font-size: 11px;
+        color: var(--sf-status-error);
+        background: rgba(239, 83, 80, 0.08);
+        border: 1px solid rgba(239, 83, 80, 0.2);
+        border-radius: 6px;
+        padding: 8px 10px;
+        word-break: break-all;
+    }
+
+    /* ── Loading ──────────────────────────────────────── */
+    .loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(
+            15,
+            34,
+            54,
+            0.9
+        ); /* Matching sf-bg-surface with transparency */
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        z-index: 10;
+    }
+
+    .loading-text {
+        font-size: 13px;
+        color: var(--sf-text-primary);
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+    }
+
+    .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--sf-border);
+        border-top-color: var(--sf-accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .spinner-sm {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 8px;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
     }
 </style>
