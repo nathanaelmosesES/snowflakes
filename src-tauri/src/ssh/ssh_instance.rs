@@ -26,7 +26,11 @@ impl SshInstance {
         let (cols, rows) = term_size::dimensions().unwrap_or((220, 50));
         let mut channel = sess.channel_session().map_err(|e| e.to_string())?;
         channel
-            .request_pty("xterm-256color", None, Some((cols as u32, rows as u32, 0, 0)))
+            .request_pty(
+                "xterm-256color",
+                None,
+                Some((cols as u32, rows as u32, 0, 0)),
+            )
             .map_err(|e| e.to_string())?;
 
         channel.exec(&hostname).unwrap();
