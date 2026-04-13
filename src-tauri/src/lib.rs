@@ -1,5 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
+use crate::sftp::sftp_engine::SftpEngine;
 use crate::ssh::ssh_engine::SshEngine;
 use serde::Serialize;
 use ssh::input::send_ssh_input;
@@ -12,6 +13,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use sysinfo::System;
 
+mod sftp;
 mod ssh;
 
 #[derive(Serialize)]
@@ -63,6 +65,7 @@ pub fn run() {
     let ssh_state = SshEngine(Arc::new(Mutex::new(HashMap::new())));
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_stronghold::Builder::new(|password| {
                 use argon2::{self, hash_raw, Config, Variant, Version};
@@ -94,7 +97,9 @@ pub fn run() {
         })
         .manage(metric_state)
         .manage(ssh_state)
+        .manage(SftpEngine(Arc::new(Mutex::new(HashMap::new()))))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             get_system_stats,
@@ -102,7 +107,13 @@ pub fn run() {
             send_ssh_input,
             disconnect,
             get_active_session,
-            reconnect_to_session
+            reconnect_to_session,
+            sftp::start::start_sftp_session,
+            sftp::manage_session::get_active_sftp_session,
+            sftp::manage_session::disconnect_sftp,
+            sftp::list::sftp_list_dir,
+            sftp::download::sftp_download_file,
+            sftp::upload::sftp_upload_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
