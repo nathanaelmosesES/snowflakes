@@ -121,32 +121,11 @@
 
 <main>
     <div class="app-shell">
-        <header class="top-bar">
-            <div class="brand">
-                <div class="logo-snowflake">❄</div>
-                <h1>Snowflakes <span class="version">v1.0</span></h1>
-            </div>
-            <button class="btn-primary" onclick={handleNewHost}>
-                <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                >
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
-                New Connection
-            </button>
-        </header>
-
         <div class="content-area">
             <div class="table-container">
                 <table class="session-table">
                     <thead>
                         <tr>
-                            <th>Status</th>
                             <th>Host / Alias</th>
                             <th>Address</th>
                             <th>Last Access</th>
@@ -168,14 +147,8 @@
                                     class="session-row"
                                     onclick={() => handleCardClick(session)}
                                 >
-                                    <td class="td-status">
-                                        <div
-                                            class="status-indicator online"
-                                        ></div>
-                                    </td>
                                     <td class="td-info">
                                         <div class="host-main">
-                                            <span class="host-icon">🖥</span>
                                             <span class="host-label"
                                                 >{session.label ||
                                                     "Untitled Server"}</span
