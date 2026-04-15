@@ -5,7 +5,6 @@
     import { listen, type UnlistenFn } from "@tauri-apps/api/event";
     import type { SessionInfo } from "../../types/settings";
 
-    // ── Props ──────────────────────────────────────────────────────────────────
     let {
         sessionKey,
         sessionInfo,
@@ -16,7 +15,6 @@
         onClose: () => void;
     } = $props();
 
-    // ── Types ──────────────────────────────────────────────────────────────────
     type SftpEntry = {
         name: string;
         path: string;
@@ -78,7 +76,6 @@
     let sortBy = $state<"name" | "size" | "modified">("name");
     let sortAsc = $state(true);
 
-    // Sorted files
     let sortedFiles = $derived(
         [...filteredFiles].sort((a, b) => {
             // Folder selalu di atas
@@ -91,14 +88,12 @@
         }),
     );
 
-    // Breadcrumbs dari currentPath
     let breadcrumbs = $derived(
         currentPath === "/"
             ? ["/"]
             : ["", ...currentPath.split("/").filter(Boolean)],
     );
 
-    // ── Lifecycle ──────────────────────────────────────────────────────────────
     onMount(async () => {
         await navigateTo("/");
         await loadTreeNode(tree[0]);
@@ -107,14 +102,12 @@
 
     onDestroy(() => {
         unlisteners.forEach((fn) => fn());
-        // Disconnect SFTP session
         invoke("disconnect_sftp", {
             sessionKey,
             window: null,
         }).catch(() => {});
     });
 
-    // ── Navigation ─────────────────────────────────────────────────────────────
     async function navigateTo(path: string) {
         isLoading = true;
         loadError = "";
@@ -151,7 +144,6 @@
         }
     }
 
-    // ── Tree ───────────────────────────────────────────────────────────────────
     async function loadTreeNode(node: TreeNode) {
         if (node.isLoaded) return;
         try {
@@ -193,7 +185,6 @@
         return currentPath === node.path;
     }
 
-    // ── Upload ─────────────────────────────────────────────────────────────────
     async function handleUpload() {
         try {
             const selected = await open({ multiple: true });
@@ -257,7 +248,6 @@
         }
     }
 
-    // ── Download ───────────────────────────────────────────────────────────────
     async function handleDownload(file: SftpEntry) {
         if (file.is_dir) return;
         try {
@@ -314,7 +304,6 @@
         }
     }
 
-    // ── Transfer helpers ───────────────────────────────────────────────────────
     function updateTransferProgress(id: string, progress: number) {
         transfers = transfers.map((t) =>
             t.id === id ? { ...t, progress } : t,
@@ -325,7 +314,6 @@
         transfers = transfers.map((t) =>
             t.id === id ? { ...t, progress: 100, status: "done" } : t,
         );
-        // Auto-remove after 3s
         setTimeout(() => {
             transfers = transfers.filter((t) => t.id !== id);
         }, 3000);
@@ -337,7 +325,6 @@
         );
     }
 
-    // ── New Folder ─────────────────────────────────────────────────────────────
     async function createFolder() {
         if (!newFolderName.trim()) return;
         isCreatingFolder = true;
@@ -449,15 +436,10 @@
     }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     SFTP FILE SYSTEM OVERLAY
-     ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="fs-overlay">
     <div class="fs-layout">
-        <!-- ── Header ──────────────────────────────────────────────────────── -->
         <header class="fs-header">
             <div class="header-left">
-                <!-- Back / Close -->
                 <button
                     class="btn btn-ghost back-btn"
                     onclick={onClose}
@@ -639,7 +621,6 @@
             </div>
         </header>
 
-        <!-- New folder input bar -->
         {#if showNewFolderInput}
             <div class="new-folder-bar">
                 <svg
@@ -681,7 +662,6 @@
             </div>
         {/if}
 
-        <!-- ── Body ────────────────────────────────────────────────────────── -->
         <div class="fs-body">
             <!-- Tree Sidebar -->
             <aside class="fs-sidebar">
@@ -1413,6 +1393,7 @@
         flex-direction: column;
         height: 100vh;
         overflow: hidden;
+        margin-top: 32px;
     }
 
     @keyframes fade-in {

@@ -10,16 +10,11 @@ use crate::sftp::{
 pub async fn start_sftp_session(
     state: tauri::State<'_, SftpEngine>,
     hostname: String,
-    bastion: String,
     initial_password: String,
     initial_username: String,
 ) -> Result<String, String> {
-    let sftp = sftp_instance::SftpInstance::bastion_session(
-        hostname.clone(),
-        bastion,
-        initial_password,
-        initial_username,
-    )?;
+    let sftp =
+        sftp_instance::SftpInstance::session(hostname.clone(), initial_password, initial_username)?;
 
     let (stop_tx, _stop_rx) = watch::channel(false);
 

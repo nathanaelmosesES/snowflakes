@@ -12,12 +12,10 @@ export async function connectToSftpSession(
     try {
         onStatus("Fetching credentials...");
 
-        // Ambil password dari vault jika tidak ada di objek session
         const password = session.password || await loadSessionPass(session.sessionKey);
 
         onStatus("Initializing SFTP session...");
         const res = await invoke("start_sftp_session", {
-            bastion: session.bastionIp,
             hostname: session.targetIp,
             initialPassword: password,
             initialUsername: session.username,

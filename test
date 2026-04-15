@@ -1,0 +1,43 @@
+  frigate-notify:
+    server: frigate:5000     
+    ignoressl: true
+
+    webapi:
+      enabled: true
+      interval: 15
+  
+    mqtt:
+      enabled: false
+  
+  alerts:
+    general:
+      title: "Frigate Alert - cam1"
+      timeformat: "02 Jan 2006 15:04:05"
+      nosnap: drop  
+      snap_bbox: true
+      snap_timestamp: true
+
+    labels:
+      allow:
+        - person
+  
+    sublabels:
+      allow:
+        - Sean
+        - Moses
+        - Vasang
+  
+    webhook:
+      enabled: true
+      server: https://10.22.65.47  # ← ganti URL webhook kamu
+      method: POST
+      headers:
+        - Content-Type: application/json
+        # - Authorization: Bearer YOUR_TOKEN   # tambahkan jika webhook butuh auth
+      template: |
+      {
+        "message": "Terdeteksi {{ .Label }} di kamera {{ .Camera }}{{ if .SubLabel }} - {{ .SubLabel }}{{ end }}",
+        "info": ""
+      }
+  monitor:
+    enabled: false
