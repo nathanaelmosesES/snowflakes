@@ -13,7 +13,6 @@
 
 :root {
 
-  /* --- Backgrounds --- */
   --sf-bg-app:          #0B1929;  /* deep arctic navy — main app bg */
   --sf-bg-surface:      #0F2236;  /* cards, panels */
   --sf-bg-terminal:    #050F1C;  /* terminal area */
