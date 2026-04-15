@@ -12,6 +12,7 @@
 	import "../layout.css";
 	import TitleBar from "../components/TitleBar.svelte";
 	import SessionTabBar from "../components/terminal/SessionTabBar.svelte";
+	import { Toaster } from 'svelte-sonner';
 
 	const menus = [
 		{ icon: House, text: "HOME", href: "/" },
@@ -30,6 +31,18 @@
 </script>
 
 <TitleBar />
+
+<Toaster
+	toastOptions={{
+		style: 'background: var(--sf-bg-surface); color: var(--sf-text-primary); border: 1px solid var(--sf-border); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);',
+		error: {
+			style: 'background: var(--sf-bg-surface); color: var(--sf-status-error); border: 1px solid var(--sf-status-error); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);'
+		},
+		success: {
+			style: 'background: var(--sf-bg-surface); color: var(--sf-status-online); border: 1px solid var(--sf-status-online); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);'
+		}
+	}}
+/>
 
 <div class="app-parent">
 	<aside class="sidebar-container">

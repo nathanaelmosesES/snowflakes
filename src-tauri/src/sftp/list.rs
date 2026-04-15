@@ -8,7 +8,7 @@ pub struct SftpEntry {
     pub path: String,
     pub is_dir: bool,
     pub size: u64,
-    pub modified: u64, // Unix timestamp
+    pub modified: u64,
 }
 
 #[tauri::command]
