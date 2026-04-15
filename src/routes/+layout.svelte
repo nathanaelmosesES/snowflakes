@@ -12,13 +12,13 @@
 	import "../layout.css";
 	import TitleBar from "../components/TitleBar.svelte";
 	import SessionTabBar from "../components/terminal/SessionTabBar.svelte";
-	import { Toaster } from 'svelte-sonner';
+	import { Toaster } from "svelte-sonner";
 
 	const menus = [
 		{ icon: House, text: "HOME", href: "/" },
 		{ icon: Folders, text: "FILES", href: "/files" },
-		{ icon: ShieldCheck, text: "KNOWN HOSTS", href: "/hosts" },
-		{ icon: ArrowLeftRight, text: "PORT FORWARDING", href: "/ports" },
+		// { icon: ShieldCheck, text: "KNOWN HOSTS", href: "/hosts" },
+		// { icon: ArrowLeftRight, text: "PORT FORWARDING", href: "/ports" },
 		{ icon: LayoutGrid, text: "MULTI WINDOW", href: "/window" },
 		{ icon: Settings, text: "SETTINGS", href: "/settings" },
 	];
@@ -34,13 +34,13 @@
 
 <Toaster
 	toastOptions={{
-		style: 'background: var(--sf-bg-surface); color: var(--sf-text-primary); border: 1px solid var(--sf-border); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);',
+		style: "background: var(--sf-bg-surface); color: var(--sf-text-primary); border: 1px solid var(--sf-border); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);",
 		error: {
-			style: 'background: var(--sf-bg-surface); color: var(--sf-status-error); border: 1px solid var(--sf-status-error); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);'
+			style: "background: var(--sf-bg-surface); color: var(--sf-status-error); border: 1px solid var(--sf-status-error); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);",
 		},
 		success: {
-			style: 'background: var(--sf-bg-surface); color: var(--sf-status-online); border: 1px solid var(--sf-status-online); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);'
-		}
+			style: "background: var(--sf-bg-surface); color: var(--sf-status-online); border: 1px solid var(--sf-status-online); font-family: var(--sf-font-ui); border-radius: var(--sf-radius-md);",
+		},
 	}}
 />
 
@@ -89,22 +89,16 @@
 		display: flex;
 		flex-direction: column;
 		padding-top: var(--sf-space-xl);
-		overflow-y: auto; /* scroll if nav overflows */
+		overflow-y: auto;
 	}
 
 	.app-layout {
-		flex: 1; /* take all remaining width */
-		min-width: 0; /* prevent flex overflow */
-		height: 100%; /* fill app-parent height */
+		flex: 1;
+		min-width: 0;
+		height: 100%;
 		display: flex;
-		flex-direction: column; /* tabbar on top, content below */
+		flex-direction: column;
 		overflow: hidden;
-	}
-
-	.content {
-		flex: 1; /* fill remaining height below tabbar */
-		min-height: 0; /* CRITICAL: allows flex child to scroll */
-		overflow-y: auto;
 	}
 
 	.brand-section {
