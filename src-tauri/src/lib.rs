@@ -12,6 +12,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 use sysinfo::System;
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+use tauri_plugin_updater::UpdaterExt;
 
 mod sftp;
 mod ssh;
@@ -65,6 +67,7 @@ pub fn run() {
     let ssh_state = SshEngine(Arc::new(Mutex::new(HashMap::new())));
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_stronghold::Builder::new(|password| {
@@ -87,12 +90,16 @@ pub fn run() {
             .build(),
         )
         .setup(|app| {
-            // Mengambil handle untuk digunakan di dalam closure atau thread
-            let _app_handle = app.handle();
-
-            // Contoh: Jika kamu ingin melakukan sesuatu saat app baru nyala
-            // app_handle.emit_all("sys-status", "Backend Ready").unwrap();
-
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = update(handle.clone()).await {
+                    let _ = handle
+                        .dialog()
+                        .message(format!("Update Error: {}", e))
+                        .title("Updater Debug")
+                        .blocking_show();
+                }
+            });
             Ok(())
         })
         .manage(metric_state)
@@ -117,4 +124,37 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
+    if let Some(update) = app.updater()?.check().await? {
+        let mut downloaded = 0;
+        // 1. Show a confirmation dialog
+        let update_version = update.version.clone();
+        let yes = app
+            .dialog()
+            .message(format!(
+                "A new version ({}) is available. Would you like to install it now?",
+                update_version
+            ))
+            .title("Update Available")
+            .buttons(MessageDialogButtons::YesNo)
+            .blocking_show();
+        if yes {
+            update
+                .download_and_install(
+                    |chunk_length, content_length| {
+                        downloaded += chunk_length;
+                        // You could emit an event here to show progress in your CSS/JS UI
+                    },
+                    || {
+                        println!("download finished");
+                    },
+                )
+                .await?;
+            println!("update installed");
+            app.restart();
+        }
+    }
+    Ok(())
 }
